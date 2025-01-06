@@ -1,7 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:e_care/pages/patient_pages/home_patient.dart';
+import 'package:e_care/pages/super_admin_pages/home_super_admin.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:validators/validators.dart';
+
+import 'admin_hospital_pages/home_admin_hospital.dart';
+import 'doctor_pages/home_doctor.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -117,25 +122,35 @@ class _LoginPageState extends State<LoginPage> {
                           DocumentSnapshot doc=  await userRef.doc(userCredential.user!.uid).get();
                           String role = doc.get('role');
 
-                          Future.delayed(Duration(milliseconds: 2000), () {
+                          Future.delayed(Duration(milliseconds: 1000), () {
 
                             switch(role) {
                               case 'super_admin':
-                              /*  Navigator.push(context,
+                               Navigator.push(context,
                                     MaterialPageRoute(builder: (context)
-                                    {return AdminHomePage();} )
-                                ); */
+                                    {return SuperAdminPage();} )
+                                );
                                 break;
 
                               case 'admin_hospital':
-
+                                Navigator.push(context,
+                                    MaterialPageRoute(builder: (context)
+                                    {return AdminHopitalPage();} )
+                                );
                                 break;
 
                               case 'doctor':
-
+                                Navigator.push(context,
+                                    MaterialPageRoute(builder: (context)
+                                    {return DoctorPage();} )
+                                );
                                 break;
 
                               case 'patient':
+                                Navigator.push(context,
+                                    MaterialPageRoute(builder: (context)
+                                    {return PatientPage();} )
+                                );
 
                                 break;
                             }

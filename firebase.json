@@ -1,0 +1,25 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "e-care-4d678",
+          "appId": "1:435744974679:android:365a8aed855f934886c012",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "e-care-4d678",
+          "configurations": {
+            "android": "1:435744974679:android:365a8aed855f934886c012",
+            "ios": "1:435744974679:ios:b851433b69edc77086c012",
+            "macos": "1:435744974679:ios:b851433b69edc77086c012",
+            "web": "1:435744974679:web:2d2c8dbe81b3974e86c012",
+            "windows": "1:435744974679:web:6c44a6e23485c5c286c012"
+          }
+        }
+      }
+    }
+  }
+}

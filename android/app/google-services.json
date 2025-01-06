@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "435744974679",
+    "project_id": "e-care-4d678",
+    "storage_bucket": "e-care-4d678.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:435744974679:android:365a8aed855f934886c012",
+        "android_client_info": {
+          "package_name": "com.ecare"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC2nfZS5FhuENfGgfPxvg7IrpjgeZD0BQ8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

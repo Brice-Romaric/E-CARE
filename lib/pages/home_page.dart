@@ -12,7 +12,7 @@ class HomePage extends StatelessWidget {
       child:Column(
         children: [
           Image.asset("assets/images/logo1.jpg"),
-          SizedBox(height: 70),
+          SizedBox(height: 60),
           ElevatedButton(
               style:const ButtonStyle(
                 backgroundColor:MaterialStatePropertyAll(Colors.blueAccent),

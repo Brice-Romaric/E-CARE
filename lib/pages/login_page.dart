@@ -118,7 +118,7 @@ class _LoginPageState extends State<LoginPage> {
                           );
                           FocusScope.of(context).requestFocus(FocusNode());
 
-                          CollectionReference userRef = FirebaseFirestore.instance.collection("utilisateurs");
+                          CollectionReference userRef = FirebaseFirestore.instance.collection("user");
                           DocumentSnapshot doc=  await userRef.doc(userCredential.user!.uid).get();
                           String role = doc.get('role');
 

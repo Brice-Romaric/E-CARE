@@ -4,8 +4,12 @@ import 'package:provider/provider.dart';
 import 'package:e_care/main.dart';
 import 'package:e_care/providers/user.dart';
 import 'package:e_care/repositories/user.dart';
-import 'package:e_care/screens/super_admin/home.dart';
-import 'package:e_care/screens/user/home.dart';
+import 'package:e_care/models/user.dart';
+import 'package:e_care/screens/admins/hospital_admin/home.dart';
+import 'package:e_care/screens/admins/super_admin/home.dart';
+import 'package:e_care/screens/patient/home.dart';
+
+import '../doctor/home.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -108,13 +112,12 @@ class _LoginState extends State<Login> {
                                 final userProvider = Provider.of<UserProvider>(
                                     context,
                                     listen: false);
-
-                                final currentUser = await UserRepository
-                                    .instance
-                                    .getById(userCredential.user!.uid);
+                                await userProvider.loadUser();
+                                final currentUser = userProvider.currentUser;
                                 if (currentUser != null) {
+                                  currentUser["password"] = mdp;
                                   switch (currentUser.role) {
-                                    case 'super_admin':
+                                    case Role.superAdmin:
                                       Navigator.push(context,
                                           MaterialPageRoute(builder: (context) {
                                         return SuperAdminPageHome(
@@ -131,10 +134,27 @@ class _LoginState extends State<Login> {
                                         );
                                       }));
                                       break;
-                                    case 'user':
+                                    case Role.hospitalAdmin:
                                       Navigator.push(context,
                                           MaterialPageRoute(builder: (context) {
-                                        return UserPageHome(
+                                            return HospitalAdminPageHome(
+                                              user: currentUser,
+                                              onLogout: (context) {
+                                                userProvider.logout();
+                                                Navigator.pushAndRemoveUntil(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                        const MonScaffold()),
+                                                        (route) => false);
+                                              },
+                                            );
+                                          }));
+                                      break;
+                                    case Role.doctor:
+                                      Navigator.push(context,
+                                          MaterialPageRoute(builder: (context) {
+                                        return DoctorPageHome(
                                           idUser: currentUser.id,
                                           onLogout: (context) {
                                             userProvider.logout();
@@ -148,11 +168,28 @@ class _LoginState extends State<Login> {
                                         );
                                       }));
                                       break;
+                                    case Role.patient:
+                                      Navigator.push(context,
+                                          MaterialPageRoute(builder: (context) {
+                                            return PatientPageHome(
+                                              idUser: currentUser.id,
+                                              onLogout: (context) {
+                                                userProvider.logout();
+                                                Navigator.pushAndRemoveUntil(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                        const MonScaffold()),
+                                                        (route) => false);
+                                              },
+                                            );
+                                          }));
+                                      break;
                                   }
                                 }
                               }
                             } on FirebaseAuthException catch (e) {
-                              if (e.code == 'user-not-found' ||
+                              if (e.code == 'patient-not-found' ||
                                   e.code == 'wrong-password') {
                                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                                     content: Text(

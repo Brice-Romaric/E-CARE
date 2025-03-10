@@ -2,14 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:e_care/models/model.dart';
 import 'package:e_care/models/user.dart';
 import 'package:e_care/repositories/user.dart';
-import 'package:e_care/screens/super_admin/managements/screens/details.dart';
-import 'package:e_care/screens/super_admin/managements/screens/form.dart';
-import 'package:e_care/screens/super_admin/managements/screens/management.dart';
+import 'package:e_care/screens/admins/details.dart';
+import 'package:e_care/screens/admins/form.dart';
+import 'package:e_care/screens/admins/management.dart';
 import 'package:e_care/widgets/field.dart';
 
-class UserFormScreen extends FormScreen<User> {
-  UserFormScreen(
-      {super.key, super.item, required super.title, required super.repository});
+class DoctorFormScreen extends FormScreen<User> {
+  DoctorFormScreen(
+      {super.key,
+      super.item,
+      required super.title,
+      required super.repository,
+      super.isMasculine,
+      super.authenticationIdentifier});
 
   @override
   Widget buildFieldsContainer(BuildContext context) {
@@ -30,6 +35,13 @@ class UserFormScreen extends FormScreen<User> {
           onSave: onSave,
         ),
         Field<String>(
+          placeholder: "Téléphone",
+          required: true,
+          initialValue: item?['phone'],
+          name: "phone",
+          onSave: onSave,
+        ),
+        Field<String>(
           placeholder: "Email",
           type: "email",
           required: true,
@@ -37,13 +49,32 @@ class UserFormScreen extends FormScreen<User> {
           name: "email",
           onSave: onSave,
         ),
-        Field<String>(
+        if (item == null)
+          Field<String>(
+            placeholder: "Mot de passe",
+            required: true,
+            type: "password",
+            name: "%password%",
+            // "%%" champs non destine a l'entite
+            onSave: onSave,
+          ),
+        Field<Gender>(
           type: "select",
+          placeholder: "Genre",
+          required: true,
+          initialValue: item?['gender'],
+          name: "gender",
+          selectOptions: Gender.values,
+          onSave: onSave,
+        ),
+        Field<Role>(
+          type: "select",
+          hidden: true,
           placeholder: "Rôle",
           required: true,
-          initialValue: item?['role'],
+          initialValue: Role.doctor,
           name: "role",
-          selectOptions: ["user", "super_admin"],
+          selectOptions: Role.values,
           onSave: onSave,
         ),
       ],
@@ -51,8 +82,8 @@ class UserFormScreen extends FormScreen<User> {
   }
 }
 
-class UserDetailsScreen extends DetailsScreen<User> {
-  const UserDetailsScreen(
+class DoctorDetailsScreen extends DetailsScreen<User> {
+  const DoctorDetailsScreen(
       {super.key, required super.title, required super.item});
 
   @override
@@ -96,36 +127,56 @@ class UserDetailsScreen extends DetailsScreen<User> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
-            "Rôle : ",
+            "Téléphone : ",
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          Text(item.role)
+          Text(item.phone)
+        ],
+      ),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            "Genre : ",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          Text(item.gender.toString())
         ],
       ),
     ]);
   }
 }
 
-class UserManagementScreen extends ManagementScreen<User> {
-  UserManagementScreen({super.key}) {
-    title = "Utilisateurs";
+class DoctorManagementScreen extends ManagementScreen<User> {
+  DoctorManagementScreen({super.key}) {
+    title = "Médecins";
+    subtitle = "Médecin";
     cardTitleFields = ["first_name", "last_name"];
     cardSubtitleFields = ["email"];
     onSearchFields = Model.modelInfoOf<User>()?.fields ?? [];
     repository = UserRepository.instance;
     maxItems = 50;
-    leading = Icons.person;
+    leading = Icons.medical_information;
     image = null;
+    customFilter = {"role": "doctor"};
+    authenticationIdentifier = "email";
   }
 
   @override
   buildFormScreen(BuildContext context, String title, dynamic item) {
-    return UserFormScreen(title: title, repository: repository, item: item);
+    return DoctorFormScreen(
+      title: title,
+      repository: repository,
+      item: item,
+      isMasculine: isMasculine,
+      authenticationIdentifier: authenticationIdentifier,
+    );
   }
 
   @override
   DetailsScreen<Model> buildDetailsScreen(
       BuildContext context, String title, item) {
-    return UserDetailsScreen(title: title, item: item);
+    return DoctorDetailsScreen(title: title, item: item);
   }
 }

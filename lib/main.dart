@@ -1,3 +1,4 @@
+import 'package:e_care/models/user.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -6,9 +7,12 @@ import 'package:e_care/models/model.dart';
 import 'package:e_care/providers/user.dart';
 import 'package:e_care/screens/account/login.dart';
 import 'package:e_care/screens/account/signup.dart';
-import 'package:e_care/screens/super_admin/home.dart';
-import 'package:e_care/screens/user/home.dart';
+import 'package:e_care/screens/admins/hospital_admin/home.dart';
+import 'package:e_care/screens/admins/super_admin/home.dart';
+import 'package:e_care/screens/patient/home.dart';
+import 'package:e_care/screens/doctor/home.dart';
 
+import 'data/export.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -45,6 +49,16 @@ class MyApp extends StatelessWidget {
         ),
         fontFamily: 'Roboto',
 
+        // Card
+        cardTheme: CardTheme(
+          color: Colors.lightBlueAccent,
+          elevation: 10,
+        ),
+
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: Colors.greenAccent
+        ),
+
         // Texte
         textTheme: TextTheme(
           displayLarge: TextStyle(fontSize: 57, fontWeight: FontWeight.bold, color: Colors.lightBlueAccent),
@@ -75,8 +89,9 @@ class MyApp extends StatelessWidget {
             ),
             padding: EdgeInsets.symmetric(vertical: 15),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
+              borderRadius: BorderRadius.circular(10),
             ),
+            elevation: 5
           ),
         ),
 
@@ -137,7 +152,7 @@ class _MonScaffoldState extends State<MonScaffold> {
     if (currentUser == null && FirebaseAuth.instance.currentUser != null) {
       return Scaffold(
           appBar: AppBar(
-            title: Text("StreamIt"),
+            title: Text("E-Care"),
           ),
           body: Center(
             child: Column(
@@ -156,10 +171,15 @@ class _MonScaffoldState extends State<MonScaffold> {
             ),
           ));
     } else if (currentUser != null) {
-      if (currentUser.role == "super_admin") {
-        return SuperAdminPageHome(user: currentUser);
-      } else {
-        return UserPageHome(idUser: currentUser.id);
+      switch (currentUser.role) {
+        case Role.superAdmin:
+          return SuperAdminPageHome(user: currentUser);
+        case Role.hospitalAdmin:
+          return HospitalAdminPageHome(user: currentUser);
+        case Role.doctor:
+          return DoctorPageHome(idUser: currentUser.id);
+        case Role.patient: // patient
+          return PatientPageHome(idUser: currentUser.id);
       }
     } else {
       return Scaffold(

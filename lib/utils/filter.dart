@@ -48,9 +48,94 @@ Filter fromListFilter(List<Filter> filters, [operator = Filter.and]) {
           filters[8],
           filters[9]);
       break;
+    case 11:
+      filter = operator(
+          filters[0],
+          filters[1],
+          filters[2],
+          filters[3],
+          filters[4],
+          filters[5],
+          filters[6],
+          filters[7],
+          filters[8],
+        filters[9],
+        filters[10],
+      );
+      break;
+    case 12:
+      filter = operator(
+        filters[0],
+        filters[1],
+        filters[2],
+        filters[3],
+        filters[4],
+        filters[5],
+        filters[6],
+        filters[7],
+        filters[8],
+        filters[9],
+        filters[10],
+        filters[11],
+      );
+      break;
+    case 13:
+      filter = operator(
+        filters[0],
+        filters[1],
+        filters[2],
+        filters[3],
+        filters[4],
+        filters[5],
+        filters[6],
+        filters[7],
+        filters[8],
+        filters[9],
+        filters[10],
+        filters[11],
+        filters[12],
+      );
+      break;
+    case 14:
+      filter = operator(
+        filters[0],
+        filters[1],
+        filters[2],
+        filters[3],
+        filters[4],
+        filters[5],
+        filters[6],
+        filters[7],
+        filters[8],
+        filters[9],
+        filters[10],
+        filters[11],
+        filters[12],
+        filters[13],
+      );
+      break;
+    case 15:
+      filter = operator(
+        filters[0],
+        filters[1],
+        filters[2],
+        filters[3],
+        filters[4],
+        filters[5],
+        filters[6],
+        filters[7],
+        filters[8],
+        filters[9],
+        filters[10],
+        filters[11],
+        filters[12],
+        filters[13],
+        filters[14],
+      );
+      break;
     default:
       throw ArgumentError(
-          "filters lenght`${filters.length}`must be between 1 and 10 !");
+          "filters lenght`${filters.length}`must be between 1 and 15 !");
   }
   return filter;
 }

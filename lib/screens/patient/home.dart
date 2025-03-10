@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:e_care/providers/user.dart';
 
-class UserPageHome extends StatefulWidget {
+class PatientPageHome extends StatefulWidget {
   final idUser;
   final Function(BuildContext)? onLogout;
 
-  const UserPageHome({super.key, required this.idUser, this.onLogout});
+  const PatientPageHome({super.key, required this.idUser, this.onLogout});
 
   @override
-  State<UserPageHome> createState() => _UserPageHomeState();
+  State<PatientPageHome> createState() => _PatientPageHomeState();
 }
 
-class _UserPageHomeState extends State<UserPageHome> {
+class _PatientPageHomeState extends State<PatientPageHome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

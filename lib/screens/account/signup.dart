@@ -1,6 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:e_care/models/user.dart';
+import 'package:e_care/providers/user.dart';
+import 'package:e_care/repositories/user.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:validators/validators.dart';
 
 class Signup extends StatefulWidget {
@@ -17,6 +21,8 @@ class _SignupState extends State<Signup> {
   final passwordController = TextEditingController();
   final lastnameController = TextEditingController();
   final firstnameController = TextEditingController();
+  final phoneController = TextEditingController();
+  Gender? value = Gender.values.firstOrNull;
 
   @override
   void dispose() {
@@ -115,6 +121,29 @@ class _SignupState extends State<Signup> {
                   },
                   controller: firstnameController,
                 ),
+                TextFormField(
+                  decoration: const InputDecoration(
+                    labelText: "Téléphone",
+                    hintText: "entrez votre téléphone",
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "saisissez le téléphone";
+                    }
+                    return null;
+                  },
+                  controller: phoneController,
+                ),
+                DropdownButtonFormField(
+                    value: value,
+                    items: Gender.values
+                        .map((item) => DropdownMenuItem(
+                            value: item, child: Text(item.toString())))
+                        .toList(),
+                    onChanged: (item) {
+                      value = item;
+                    }),
                 const SizedBox(height: 15),
                 SizedBox(
                   width: double.infinity,
@@ -126,27 +155,36 @@ class _SignupState extends State<Signup> {
                         final mdp = passwordController.text;
                         final lastname = lastnameController.text;
                         final firstname = firstnameController.text;
+                        final phone = phoneController.text;
 
                         try {
-                          final userCredential = await FirebaseAuth.instance
+                          final userCredential = await fb.FirebaseAuth.instance
                               .createUserWithEmailAndPassword(
                                   email: mail, password: mdp);
                           //authentifier le user avant de créer
                           if (userCredential.user != null) {
                             CollectionReference userRef =
                                 FirebaseFirestore.instance.collection("user");
-                            await userRef.doc(userCredential.user!.uid).set({
-                              'role': 'user',
+                            User currentUser = User.fromJson({
+                              'id': userCredential.user!.uid,
+                              'role': Role.patient.toString(),
                               'email': mail,
                               'last_name': lastname,
                               'first_name': firstname,
+                              "phone": phone,
+                              "gender": value.toString()
                             });
-
+                            UserRepository.instance.set(currentUser);
+                            UserProvider pr = Provider.of<UserProvider>(context,
+                                listen: false);
+                            pr.loadUser();
+                            currentUser = pr.currentUser!;
+                            currentUser["password"] = mdp;
                             ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text("Inscription réussie")));
                             FocusScope.of(context).requestFocus(FocusNode());
                           }
-                        } on FirebaseAuthException catch (e) {
+                        } on fb.FirebaseAuthException catch (e) {
                           String errorMessage;
                           // Gestion spécifique des erreurs d'authentification
                           switch (e.code) {

@@ -9,7 +9,7 @@ abstract class FirebaseFirestoreRepository<T extends Model>
     implements Repository<T> {
   final String collectionName = ModelInfo.modelToCollectionName<T>();
 
-  S _fromFirestore<S extends Model>(data, String id) {
+  S _fromFirestore<S extends Model>(data, String? id) {
     Function fromJson =
         Model.modelInfoOf<S>()?.getCallable("fromJson") as Function;
     Map<String, dynamic> d = {...data, "id": id};
@@ -25,9 +25,30 @@ abstract class FirebaseFirestoreRepository<T extends Model>
       return _fromFirestore<T>(item.toJson(), docRef.id);
     } else {
       item.remove("id");
-      final docRef =
-          await FirebaseFirestore.instance.collection(collectionName).add(item);
-      return _fromFirestore<T>(item, docRef.id);
+      item = _fromFirestore<T>(item, null);
+      final docRef = await FirebaseFirestore.instance
+          .collection(collectionName)
+          .add(item.toFirebaseFirestoreDocument());
+      item.id = docRef.id;
+      return item;
+    }
+  }
+
+  @override
+  Future<T> set(dynamic item, [dynamic options]) async {
+    if (item is T) {
+      await FirebaseFirestore.instance
+          .collection(collectionName)
+          .doc(item.id!)
+          .set(item.toFirebaseFirestoreDocument());
+      return item;
+    } else {
+      item = _fromFirestore<T>(item, item.remove("id")!);
+      await FirebaseFirestore.instance
+          .collection(collectionName)
+          .doc(item.id)
+          .set(item.toFirebaseFirestoreDocument());
+      return item;
     }
   }
 
@@ -176,11 +197,11 @@ abstract class FirebaseFirestoreRepository<T extends Model>
           final data = doc.data() as Map<String, dynamic>;
 
           // Filtrer les résultats côté client
-      for (var field in filters.keys) {
-        if (filters[field] is String && data[field] is String) {
-          String filterValue = filters[field];
-          String documentValue = data[field];
-          int type = searchTypes?[field] ?? searchTypeExact;
+          for (var field in filters.keys) {
+            if (filters[field] is String && data[field] is String) {
+              String filterValue = filters[field];
+              String documentValue = data[field];
+              int type = searchTypes?[field] ?? searchTypeExact;
 
               // Ignore case
               if (type & searchTypeIgnoreCase != 0) {
@@ -189,10 +210,10 @@ abstract class FirebaseFirestoreRepository<T extends Model>
               }
 
               // Contains
-          if (type & searchTypeContains != 0 &&
-              !documentValue.contains(filterValue)) {
-            return null;
-          }
+              if (type & searchTypeContains != 0 &&
+                  !documentValue.contains(filterValue)) {
+                return null;
+              }
 
               // EndsWith
               if (type & searchTypeEndsWith != 0 &&
@@ -460,8 +481,8 @@ abstract class FirebaseFirestoreRepository<T extends Model>
           .doc(itemId)
           .get();
       if (doc.exists) {
-        String otherId = doc.get("${otherName}_id");
-        if (otherId == "") {
+        String? otherId = doc.get("${otherName}_id");
+        if (otherId == null || otherId == "") {
           return null;
         }
         DocumentSnapshot os = await FirebaseFirestore.instance

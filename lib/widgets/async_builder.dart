@@ -12,9 +12,8 @@ class AsyncBuilder<T> extends StatelessWidget {
         future: future,
         builder: (context, snapshot) {
           List<Widget> children;
-          if (snapshot.hasData) {
-            return builder(context, snapshot.data as T);
-          } else if (snapshot.hasError) {
+          if (snapshot.hasError) {
+            print('Error: ${snapshot.error}\nStack: ${(snapshot.error as Error).stackTrace}');
             children = <Widget>[
               const Icon(
                 Icons.error_outline,
@@ -26,7 +25,7 @@ class AsyncBuilder<T> extends StatelessWidget {
                 child: Text('Error: ${(snapshot.error as Error).stackTrace}'),
               ),
             ];
-          } else {
+          } else if (snapshot.connectionState == ConnectionState.waiting) {
             children = const <Widget>[
               SizedBox(
                 width: 60,
@@ -38,6 +37,8 @@ class AsyncBuilder<T> extends StatelessWidget {
                 child: Text('En attente de resultat...'),
               ),
             ];
+          } else {
+            return builder(context, snapshot.data as T);
           }
           return Center(
             child: Column(

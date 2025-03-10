@@ -22,6 +22,12 @@ abstract class Repository<T extends Model> {
   /// objet a la base de donnees pour ce model
   Future<T> create(dynamic item);
 
+  /// Sets data on the document, overwriting any existing data.
+  /// If the document does not yet exist, it will be created.
+  /// If SetOptions are provided, the data can be merged
+  /// into an existing document instead of overwriting.
+  Future<T> set(dynamic item, [dynamic options]);
+
   /// Methode pour la lecture d'un objet de la base de
   /// donnees par [(ID ou objet)] pour ce model
   Future<T?> getById(dynamic item);
@@ -49,8 +55,9 @@ abstract class Repository<T extends Model> {
 
   /// Methode pour la lecture de tous les objets d'une relation
   /// plusieur a plusieur pour ce model [(ID ou objet)]
-  Future<List<M>> getManyMany<M extends Model>(dynamic item,
-      String relationName, {String? tableName});
+  Future<List<M>> getManyMany<M extends Model>(
+      dynamic item, String relationName,
+      {String? tableName});
 
   /// Methode pour l'ajout d'objets d'une relation
   /// plusieur a plusieur pour ce model [(ID ou objet)]

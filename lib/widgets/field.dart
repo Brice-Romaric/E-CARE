@@ -1,70 +1,9 @@
+import 'package:e_care/models/model.dart';
+import 'package:e_care/widgets/date_field.dart';
+import 'package:e_care/widgets/select_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:multi_dropdown/multi_dropdown.dart';
-
-class _MultiDropdownFormField<T extends Object> extends FormField<List<T>> {
-  _MultiDropdownFormField({
-    super.key,
-    super.onSaved,
-    required widget,
-    required getValue,
-    required List<DropdownItem<T>> items,
-    required MultiSelectController<T> controller,
-    super.validator,
-  }) : super(
-          initialValue: items
-              .where((item) => item.selected)
-              .map((item) => item.value)
-              .toList(),
-          builder: (FormFieldState<List<T>> state) {
-            return MultiDropdown<T>(
-              items: items,
-              controller: controller,
-              singleSelect: !widget.selectMultiple,
-              enabled: true,
-              searchEnabled: true,
-              chipDecoration: const ChipDecoration(
-                backgroundColor: Colors.yellow,
-                wrap: true,
-                runSpacing: 2,
-                spacing: 10,
-              ),
-              fieldDecoration: FieldDecoration(
-                hintText: widget.placeholder,
-                hintStyle: const TextStyle(color: Colors.black87),
-                prefixIcon: widget.leading,
-                suffixIcon: widget.trailing,
-                showClearIcon: false,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Colors.grey),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(
-                    color: Colors.black87,
-                  ),
-                ),
-              ),
-              dropdownDecoration: const DropdownDecoration(
-                marginTop: 2,
-                maxHeight: 500,
-              ),
-              dropdownItemDecoration: DropdownItemDecoration(
-                selectedIcon: const Icon(Icons.check_box, color: Colors.green),
-                disabledIcon: Icon(Icons.lock, color: Colors.grey.shade300),
-              ),
-              validator: widget.validator,
-              onSelectionChange: (value) {
-                state.didChange(value);
-                if (widget.onChange != null) {
-                  widget.onChange!(widget.name, getValue(value));
-                }
-              },
-            );
-          },
-        );
-}
 
 class Field<T extends Object> extends StatefulWidget {
   final String? name;
@@ -86,6 +25,7 @@ class Field<T extends Object> extends StatefulWidget {
   final Widget? trailing;
   final void Function(String?, dynamic)? onSave;
   final void Function(String?, dynamic)? onChange;
+  final bool? hidden;
 
   Field(
       {super.key,
@@ -107,13 +47,16 @@ class Field<T extends Object> extends StatefulWidget {
       this.trailing,
       this.selectSearchLabel,
       this.onSave,
-      this.onChange});
+      this.onChange,
+      this.hidden});
 
   @override
   State<Field<T>> createState() => _FieldState();
 
   String? validator(dynamic value) {
-    if (required && (value == null || value.isEmpty)) {
+    if (required &&
+        (value == null ||
+            ((value is List || value is String) && value.isEmpty))) {
       return "Ce champ est requis";
     }
     switch (type) {
@@ -159,33 +102,45 @@ class _FieldState<T extends Object> extends State<Field<T>> {
                 selected = true;
               }
               if (!isString &&
-                  option[widget.selectLabelField ?? "id"] ==
+                  (option is Model
+                          ? option[widget.selectLabelField ?? "id"]
+                          : option.toString()) ==
                       widget.initialValue) {
                 selected = true;
               }
             } else if (widget.initialValue is! List) {
               if (option ==
-                  widget.initialValue[widget.selectLabelField ?? "id"]) {
+                  (widget.initialValue is Model
+                      ? widget.initialValue[widget.selectLabelField ?? "id"]
+                      : widget.initialValue.toString())) {
                 selected = true;
               }
               if (!isString &&
-                  option[widget.selectLabelField ?? "id"] ==
-                      widget.initialValue[widget.selectLabelField ?? "id"]) {
+                  (option is Model
+                          ? option[widget.selectLabelField ?? "id"]
+                          : option.toString()) ==
+                      (widget.initialValue is Model
+                          ? widget.initialValue[widget.selectLabelField ?? "id"]
+                          : widget.initialValue.toString())) {
                 selected = true;
               }
             } else {
               if (widget.initialValue.contains(option)) {
                 selected = true;
               } else if (!isString &&
-                  widget.initialValue
-                      .contains(option[widget.selectLabelField ?? "id"])) {
+                  widget.initialValue.contains((option is Model
+                      ? option[widget.selectLabelField ?? "id"]
+                      : option.toString()))) {
                 selected = true;
               }
             }
           }
           return DropdownItem<T>(
-              label:
-                  isString ? option : option[widget.selectLabelField ?? "id"],
+              label: isString
+                  ? option
+                  : (option is Model
+                      ? option[widget.selectLabelField ?? "id"]
+                      : option.toString()),
               value: option,
               selected: selected);
         }).toList() ??
@@ -212,19 +167,44 @@ class _FieldState<T extends Object> extends State<Field<T>> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.hidden == true) {
+      if (widget.onSave != null) {
+        widget.onSave!(widget.name, widget.initialValue);
+      }
+      return SizedBox(width: 0, height: 0);
+    }
+
     double borderRadius = widget.borderRadius ?? 10;
     List<TextInputFormatter>? inputFormatters = widget.inputFormatters;
     TextInputType? keyboardType = widget.keyboardType;
     String type = widget.type ?? "text";
+    if (T.toString() == "DateTime") {
+      type = "datetime";
+    }
     controller = widget.controller;
 
     switch (type) {
-      case "select":
-        controller ??= MultiSelectController<T>();
-        print(T);
+      case "datetime":
         return Padding(
           padding: const EdgeInsets.all(5.0),
-          child: _MultiDropdownFormField<T>(
+          child: DateFormField(
+            widget: widget,
+            getValue: _getValue,
+            validator: widget.validator,
+            hintText: widget.placeholder,
+            initialValue: widget.initialValue,
+            onSaved: (value) {
+              if (widget.onSave != null) {
+                widget.onSave!(widget.name, _getValue(value));
+              }
+            },
+          ),
+        );
+      case "select":
+        controller ??= MultiSelectController<T>();
+        return Padding(
+          padding: const EdgeInsets.all(5.0),
+          child: MultiDropdownFormField<T>(
             widget: widget,
             getValue: _getValue,
             items: dropdownValues,
@@ -262,6 +242,7 @@ class _FieldState<T extends Object> extends State<Field<T>> {
             autocorrect: false,
             autovalidateMode: AutovalidateMode.onUserInteraction,
             controller: controller,
+            obscureText: type == "password",
             decoration: InputDecoration(
               prefixIcon: widget.leading,
               suffixIcon: widget.trailing,

@@ -2,6 +2,16 @@ import 'dart:convert';
 import 'dart:core';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:e_care/models/authorisation.dart';
+import 'package:e_care/models/consultation.dart';
+import 'package:e_care/models/hospital.dart';
+import 'package:e_care/models/measure.dart';
+import 'package:e_care/models/measure_information.dart';
+import 'package:e_care/models/medical_condition.dart';
+import 'package:e_care/models/medical_condition_information.dart';
+import 'package:e_care/models/medicament.dart';
+import 'package:e_care/models/prescription.dart';
+import 'package:e_care/models/rdv.dart';
 import 'package:flutter/material.dart';
 import 'package:e_care/models/user.dart';
 
@@ -110,6 +120,44 @@ class ModelInfo<T extends Model> {
   }
 }
 
+class RelationData with ChangeNotifier {
+  dynamic _data;
+
+  dynamic get data => _data;
+
+  set data(dynamic value) {
+    if (value is RelationData) {
+      value = value.data;
+    }
+    if (_data != value) {
+      _data = value;
+      notifyListeners();
+    }
+  }
+
+  RelationData(dynamic data) {
+    _data = data is RelationData ? data.data : data;
+  }
+
+  @override
+  String toString() {
+    return id ?? "";
+  }
+
+  bool get isId => _data is String;
+
+  bool get isModel => _data is Model;
+
+  String? get id =>
+      _data is String? ? _data : (isModel ? _data.id : _data.toString());
+
+  Model? get model => _data is Model? ? _data : null;
+
+  static RelationData fromValue(dynamic value) {
+    return value is RelationData ? value : RelationData(value);
+  }
+}
+
 /// Model ou structure de base faisant office d'interface aux collections
 /// presentes dans firebase firestore.
 /// Ils emettent aussi des evenements lors de modification des champs.
@@ -119,6 +167,7 @@ abstract class Model extends Iterable<MapEntry<String, dynamic>>
   get iterator => toJson().entries.iterator;
 
   static final Map<Type, ModelInfo> models = {};
+  final Map<String, dynamic> _extraFields = {};
 
   static void registerModel<T extends Model>(ModelInfo<T> modelInfo) {
     Model.models[T] = modelInfo;
@@ -137,8 +186,6 @@ abstract class Model extends Iterable<MapEntry<String, dynamic>>
   static List<String> get modelsNameList =>
       models.keys.map((key) => key.toString()).toList();
 
-  final Map<String, dynamic> _relationData = {};
-
   String? _id;
 
   Model({String? id, bool isRegisteredModel = false}) {
@@ -155,12 +202,12 @@ abstract class Model extends Iterable<MapEntry<String, dynamic>>
     if (json.containsKey(field)) {
       return json[field];
     } else {
-      return _relationData[field];
+      return _extraFields[field];
     }
   }
 
   void operator []=(String field, dynamic value) {
-    _relationData[field] = value;
+    _extraFields[field] = value;
   }
 
   @override
@@ -225,4 +272,14 @@ abstract class Model extends Iterable<MapEntry<String, dynamic>>
 
 loadModels() {
   User.isRegisteredModel;
+  Medicament.isRegisteredModel;
+  Hospital.isRegisteredModel;
+  Consultation.isRegisteredModel;
+  Prescription.isRegisteredModel;
+  RDV.isRegisteredModel;
+  Measure.isRegisteredModel;
+  MeasureInformation.isRegisteredModel;
+  MedicalCondition.isRegisteredModel;
+  MedicalConditionInformation.isRegisteredModel;
+  Authorisation.isRegisteredModel;
 }
